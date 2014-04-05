@@ -1,0 +1,31 @@
+{
+  "name": "sparkboard-tools",
+  "version": "0.0.0",
+  "description": "Utilities for building apps with Firebase and React",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "npm test",
+    "prepublish": "coffee -o lib/ -c src/",
+    "build": "coffee -o lib/ -c src/",
+    "start": "coffee -o lib/ -cw src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:sparkboard/sparkboard-tools.git"
+  },
+  "author": "Matthew Huebert",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sparkboard/sparkboard-tools/issues"
+  },
+  "homepage": "https://github.com/sparkboard/sparkboard-tools",
+  "devDependencies": {
+    "coffee-script": "^1.7.1",
+    "docco": "^0.6.3"
+  },
+  "dependencies": {
+    "underscore": "^1.6.0",
+    "url-pattern": "^0.5.0",
+    "async": "^0.6.2"
+  }
+}
