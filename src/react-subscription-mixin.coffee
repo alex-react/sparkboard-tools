@@ -29,7 +29,7 @@
 {getRootComponent} = require("./utils")
 
 
-setSubscriptionPropsCallback = (owner, path) ->
+setSubscriptionPropsCallback = (owner, path, wrap) ->
     (data) ->
         props = {}
         props[path] = data
@@ -43,7 +43,7 @@ module.exports =
         for path, subscription of @type.subscriptions?(props)
 
             do (path, subscription) =>
-                subscription.subscribe setSubscriptionPropsCallback(owner, path)
+                subscription.subscribe setSubscriptionPropsCallback(owner, path, subscription.wrap)
                 @__subscriptions[path] = subscription
     
     unsubscribe: ->

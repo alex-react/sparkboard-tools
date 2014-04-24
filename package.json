@@ -26,6 +26,9 @@
   "dependencies": {
     "underscore": "^1.6.0",
     "url-pattern": "^0.5.0",
-    "async": "^0.6.2"
+    "async": "^0.6.2",
+    "require-directory": "^1.2.0",
+    "optimist": "^0.6.1",
+    "traverse": "^0.6.6"
   }
 }
