@@ -1,7 +1,23 @@
 
 ###
 
-    Asynchronously fetch data from multiple subscription objects.
+    Fetch data (once) from multiple subscription objects and put all results into a single object.
+
+    For example, if the subscriptions hash looks like this:
+
+    {
+        users: {...subscription object...}
+        projects: {...subscription object...}
+        anotherObject: {...subscription object...}
+    }
+
+    Data will be returned in an object like this:
+
+    {
+        users: [...data...]
+        projects: [...data...]
+        anotherObject: {...data...}
+    }
 
 ###
 
@@ -20,17 +36,19 @@ module.exports = (subscriptions, fetchCallback) ->
                 _.extend pair[1], path: pair[0])
             .value().filter(Boolean)
     
-    # Function to fetch data using subscribe().  
-    # Remember to unsubscribe() after receiving the first data.
+    # Fetch data using subscribe().  
+    # Immediately unsubscribe() after receiving the data.
     getData = (subscription, callback) ->
         subscription.subscribe (data) ->
             object = {}
             object[subscription.path] = data
             callback(null, object)
             subscription.unsubscribe()
+        , {wait: true}
 
-    # Fetch asynchronously & put data into an object that matches 
-    # the structure of the original hash.
+    # Fetch all data concurrently.
+    # Put results into an object with a structure that
+    # mirrors the original hash of subscription objects.
     async.map list, getData, (err, data) ->
         object = {}
         for result in data

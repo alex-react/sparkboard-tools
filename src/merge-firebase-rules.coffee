@@ -13,9 +13,17 @@ argv = require("optimist").argv
 _ = require("underscore")
 fs = require("fs")
 traverse = require("traverse")
+path = require("path")
 
 readPath = argv._[0]
 writePath = argv._[1]
+
+renameParent = (traversal, context, object, from, to) ->
+  if context.key == from
+    basePath = context.parent.path
+    newPath = basePath.concat([to])
+    traversal.set newPath, object
+    context.remove()
 
 module.exports = (readPath, writePath) ->
   console.log "Begin to merge Firebase rules:"
@@ -29,6 +37,12 @@ module.exports = (readPath, writePath) ->
 
 
   traversal = traverse(rulesFromFiles)
+
+  traversal.forEach (object) ->
+    renameParent traversal, this, object, "validate", ".validate"
+    renameParent traversal, this, object, "read", ".read"
+    renameParent traversal, this, object, "write", ".write"
+
   traversal.forEach (object) ->
     if this.key in ['index', 'root']
       basePath = this.parent.path
@@ -41,4 +55,11 @@ module.exports = (readPath, writePath) ->
 
   fs.writeFileSync writePath, rules
   console.log "...Compiled rules: #{writePath}"
+  
+  # Clear require.cache so that we can reload this function
+  readPath = path.resolve readPath
+  for key in _(require.cache).keys()
+    if key.match ///^#{readPath}///
+      delete require.cache[key]
+  # delete require.cache[require.resolve('./b.js')]
   rules

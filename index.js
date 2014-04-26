@@ -5,3 +5,4 @@ exports.Router = require("./lib/router")
 exports.mergeFirebaseRules = require("./lib/merge-firebase-rules")
 
 exports.firebaseSubscription = require("./lib/firebase-subscription")
+exports.firebaseRelationalSubscription = require("./lib/firebase-relational-subscription")
