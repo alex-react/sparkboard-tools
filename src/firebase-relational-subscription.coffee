@@ -5,22 +5,23 @@ module.exports = (manifest) ->
     handlers: {}
     models: {}
     modelIndex: []
-    parse: manifest.parse || (snapshot) ->
+    parseObject: manifest.parseObject || (snapshot) ->
         obj = snapshot.val()
         obj.priority = snapshot.getPriority()
         obj.id = snapshot.name()
         obj
+    parseList: manifest.parseList || (list) -> list
     exportModels: ->
         # modelList = []
         # for key in @modelIndex
         #     modelList.push @models[key] if @models[key]
         # modelList
         list = _.chain(@models).pairs().map((pair) -> pair[1]).sortBy((object)->object.priority)
-        list.value()
+        @parseList list.value()
     subscribe: (callback, options={}) ->
         updateObject = (snapshot) =>
-            @models[snapshot.name()] = @parse(snapshot)
-            if options.wait != true or _(@models).keys().length == @modelIndex.length
+            @models[snapshot.name()] = @parseObject(snapshot)
+            if _(@models).keys().length == @modelIndex.length # or options.wait != true
                 callback(@exportModels()) 
 
         manifest.indexRef.on "child_added", (snapshot) =>

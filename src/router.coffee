@@ -30,14 +30,7 @@
 _ = require("underscore")
 urlPattern = require('url-pattern')
 
-closest = (el, tag) ->
-    tag = tag.toUpperCase()
-    if el.nodeName == tag
-        return el
-    while el = el.parentNode
-        if el.nodeName == tag
-            return el
-    null
+{closestTag} = require("./utils")
 
 
 
@@ -45,12 +38,14 @@ RouterMixin = @Mixin =
     
     # Before component mounts, match route.
     # Route is passed via props on the server & window.location.pathname on client.
-    componentWillMount: ->
-        this.props.matchedRoute = this.matchRoute(this.props.path || window.location.pathname)
+    # componentWillMount: ->
+    #     path = this.props.path || window.location.pathname
+    #     @matchRoute path, (matchedRoute) =>
+    #         this.props.matchedRoute = matchedRoute
 
     # Catch all clicks and don't reload the page for URLs that begin with "/"
     handleClick: (e) ->
-        if link = closest(e.target, 'A') 
+        if link = closestTag(e.target, 'A') 
             if link.getAttribute("href")?[0] == "/"
                 e.preventDefault()
                 e.stopPropagation()
@@ -59,12 +54,13 @@ RouterMixin = @Mixin =
     handlePopstate: ->
         path = window.location.pathname
         if this.props.matchedRoute.path != path
-            this.setProps matchedRoute: this.matchRoute(path)
+            @matchRoute path, (matchedRoute) =>
+                this.setProps matchedRoute: matchedRoute
 
     componentDidMount: ->
         window.addEventListener 'popstate', this.handlePopstate
 
-    matchRoute: (path) ->
+    matchStaticRoute: (path) ->
         path += "/" if path[path.length-1] != "/"
         for route in (this.routes || [])
             route.path += "/" if route.path[route.path.length-1] != "/"
@@ -75,11 +71,21 @@ RouterMixin = @Mixin =
                     path: path
                     params: params
                     handler: route.handler
-                return matchedRoute
+        return matchedRoute || null
+
+    matchRoute: (path, callback, options={}) ->
+        path += "/" if path[path.length-1] != "/"
+        matchedRoute = @matchStaticRoute(path)
+        if matchedRoute
+            callback(matchedRoute)
+        else
+            @fallbackRoute path, (matchedRoute) ->
+                callback(matchedRoute)
 
     navigate: (path, callback) ->
         window.history.pushState(null, null, path)
-        this.setProps({ matchedRoute: this.matchRoute(path) }, callback)
+        @matchRoute path, (matchedRoute) =>
+            this.setProps({ matchedRoute: matchedRoute }, callback)
 
 @create = (routes) ->
     Router = _.clone RouterMixin
@@ -88,4 +94,6 @@ RouterMixin = @Mixin =
         routes: routes
         add: (route) ->
             this.routes.push route
+        addFallback: (fallback) ->
+            this.fallbackRoute = fallback
     Router
