@@ -8,6 +8,10 @@ module.exports = (manifest) ->
   manifest.subscribe = (updateDataCallback) ->
     manifest.query = manifest.query || (ref, cb) -> cb(ref)
     manifest.query manifest.ref, (ref) =>
+      if ref == null
+        manifest.inactive = true
+        updateDataCallback(manifest.default)
+        return
       manifest.queryRef = ref
       manifest.__callback = (snapshot) ->
         parse = manifest.parse || (snapshot) -> snapshot.val()
@@ -15,5 +19,6 @@ module.exports = (manifest) ->
         updateDataCallback(value)
       ref.on "value", manifest.__callback
   manifest.unsubscribe = ->
-      manifest.queryRef.off "value", manifest.__callback
+      if manifest.inactive != true
+        manifest.queryRef.off() # "value", manifest.__callback
   manifest
