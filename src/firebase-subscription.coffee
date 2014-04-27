@@ -20,5 +20,5 @@ module.exports = (manifest) ->
       ref.on "value", manifest.__callback
   manifest.unsubscribe = ->
       if manifest.inactive != true
-        manifest.queryRef.off() # "value", manifest.__callback
+        manifest.queryRef?.off() # "value", manifest.__callback
   manifest
