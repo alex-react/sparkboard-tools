@@ -19,15 +19,23 @@ module.exports = (manifest) ->
         list = _.chain(@models).pairs().map((pair) -> pair[1]).sortBy((object)->object.priority)
         @parseList list.value()
     subscribe: (callback, options={}) ->
-        updateObject = (snapshot) =>
-            @models[snapshot.name()] = @parseObject(snapshot)
+        exportAllModels = =>
             if _(@models).keys().length == @modelIndex.length # or options.wait != true
                 callback(@exportModels()) 
+
+        updateObject = (snapshot) =>
+            @models[snapshot.name()] = @parseObject(snapshot)
+            exportAllModels()
+
+        cancelUpdateObject = (id) =>
+            =>
+                @modelIndex = _.without @modelIndex, id
+                exportAllModels()
 
         manifest.indexRef.on "child_added", (snapshot) =>
             @modelIndex.push snapshot.name()
             childRef = manifest.dataRef.child(snapshot.name())
-            childRef.on "value", updateObject
+            childRef.on "value", updateObject, cancelUpdateObject(snapshot.name())
             @handlers[snapshot.name()] = 
                 fn: updateObject
                 ref: childRef
