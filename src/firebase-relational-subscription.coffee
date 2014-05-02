@@ -5,6 +5,7 @@ module.exports = (manifest) ->
     handlers: {}
     models: {}
     modelIndex: []
+    modelIndexRemoved: []
     parseObject: manifest.parseObject || (snapshot) ->
         obj = snapshot.val()
         obj.priority = snapshot.getPriority()
@@ -12,10 +13,6 @@ module.exports = (manifest) ->
         obj
     parseList: manifest.parseList || (list) -> list
     exportModels: ->
-        # modelList = []
-        # for key in @modelIndex
-        #     modelList.push @models[key] if @models[key]
-        # modelList
         list = _.chain(@models).pairs().map((pair) -> pair[1]).sortBy((object)->object.priority)
         @parseList list.value()
     subscribe: (callback, options={}) ->
@@ -30,22 +27,35 @@ module.exports = (manifest) ->
         cancelUpdateObject = (id) =>
             =>
                 @modelIndex = _.without @modelIndex, id
+                @modelIndexRemoved.push(id)
                 exportAllModels()
-
-        manifest.indexRef.on "child_added", (snapshot) =>
-            @modelIndex.push snapshot.name()
-            childRef = manifest.dataRef.child(snapshot.name())
-            childRef.on "value", updateObject, cancelUpdateObject(snapshot.name())
-            @handlers[snapshot.name()] = 
+        addChild = (id) =>
+            childRef = manifest.dataRef.child(id)
+            childRef.on "value", updateObject, cancelUpdateObject(id)
+            @handlers[id] = 
                 fn: updateObject
                 ref: childRef
 
-        manifest.indexRef.on "child_removed", (snapshot) =>
-            key = snapshot.name()
-            @modelIndex = _(@modelIndex).without key
-            delete @handlers[key]
-            delete @models[key]
-            callback(@exportModels())
+        removeChild = (id) =>
+            @handlers[id]?.ref.off?()
+            delete @handlers[id]
+            delete @models[id]
+        manifest.indexRef.on "value", (snapshot) =>
+            currentKeys = _(snapshot.val()).keys()
+            existingKeys = _(@models).keys().concat(@modelIndexRemoved)
+            removedKeys = _(existingKeys).without currentKeys
+            newKeys = _(currentKeys).without existingKeys
+
+            @modelIndex = _(currentKeys).without @modelIndexRemoved
+
+            for key in removedKeys
+                removeChild(key)
+            for key in newKeys
+                addChild(key)
+
+            exportAllModels()
+
+        
 
     unsubscribe: ->
         manifest.indexRef.off()

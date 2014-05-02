@@ -59,6 +59,7 @@ RouterMixin = @Mixin =
 
     componentDidMount: ->
         window.addEventListener 'popstate', this.handlePopstate
+        window.Router = this
 
     matchStaticRoute: (path) ->
         path += "/" if path[path.length-1] != "/"

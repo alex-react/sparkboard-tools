@@ -13,11 +13,14 @@ module.exports = (manifest) ->
         updateDataCallback(manifest.default)
         return
       manifest.queryRef = ref
-      manifest.__callback = (snapshot) ->
+      updateObject = (snapshot) ->
         parse = manifest.parse || (snapshot) -> snapshot.val()
         value = parse(snapshot)
         updateDataCallback(value)
-      ref.on "value", manifest.__callback
+      cancelUpdateObject = ->
+        updateDataCallback(manifest.default)
+        
+      ref.on "value", updateObject, cancelUpdateObject
   manifest.unsubscribe = ->
       if manifest.inactive != true
         manifest.queryRef?.off() # "value", manifest.__callback
