@@ -1,5 +1,32 @@
 _ = require("underscore")
 
+###
+    
+    Create a subscription object that uses one firebase ref as
+    an 'index' of IDs to fetch from another firebase ref.
+    
+    Example:
+
+    # Will look up post IDs in /users/#{ownerId}/writing,
+    # and fetch the actual posts from /posts.
+
+    firebaseRelationalSubscription
+      indexRef: new Firebase(FIREBASE_URL+'/users/'+ownerId+'/writing').limit(limit)
+      dataRef: new Firebase(FIREBASE_URL+'/posts')
+      ref: new Firebase(FIREBASE_URL+'/writing')
+      shouldUpdateSubscription: (oldProps, newProps) ->
+        oldProps.settings.ownerId != newProps.settings.ownerId
+      query: (ref, done) -> done(ref.limit(limit))
+      default: _([])
+      server: true
+      parseObject: (snapshot) ->
+          post = snapshot.val()
+          post.id = snapshot.name()
+          post
+      parseList: (list) -> list.reverse()
+
+###
+
 module.exports = (manifest) ->
     _.extend manifest, 
     handlers: {}
