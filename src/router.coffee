@@ -50,7 +50,6 @@ RouterMixin = @Mixin =
                 e.preventDefault()
                 e.stopPropagation()
                 this.navigate(link.pathname)
-
     handlePopstate: ->
         path = window.location.pathname
         if this.props.matchedRoute.path != path
@@ -84,8 +83,9 @@ RouterMixin = @Mixin =
                 callback(matchedRoute)
 
     navigate: (path, callback) ->
-        window.history.pushState(null, null, path)
+        
         @matchRoute path, (matchedRoute) =>
+            window.history.pushState(null, null, path)
             this.setProps({ matchedRoute: matchedRoute }, callback)
 
 @create = (routes) ->
