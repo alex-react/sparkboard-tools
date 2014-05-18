@@ -29,6 +29,7 @@
     "async": "^0.6.2",
     "require-directory": "^1.2.0",
     "optimist": "^0.6.1",
-    "traverse": "^0.6.6"
+    "traverse": "^0.6.6",
+    "firebase": "^1.0.15-3"
   }
 }
