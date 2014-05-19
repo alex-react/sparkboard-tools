@@ -47,6 +47,7 @@ module.exports =
                 @__subscriptions[path] = subscription
     
     unsubscribe: ->
+
         for path, subscription of @__subscriptions
             subscription.unsubscribe()
             delete @__subscriptions[path]
@@ -58,13 +59,24 @@ module.exports =
         @unsubscribe()
     
     componentWillReceiveProps: (newProps) ->
+
         owner = getRootComponent(this)
-        newSubscriptions = @type.subscriptions(newProps)
+        pathsToUpdate = []
+        
         for path, subscription of @__subscriptions
             if subscription.shouldUpdateSubscription?(this.props, newProps)
-                subscription.unsubscribe()
-                subscription = @__subscriptions[path] = newSubscriptions[path]
-                subscription.subscribe setSubscriptionPropsCallback(owner, path)
+                pathsToUpdate.push(path)
+        
+        if pathsToUpdate.length > 0
+            # Without this timeout, we were setting new props before these props
+            # could be applied, which resulted in errors (parentNode undefined, etc.)
+            setTimeout =>
+                newSubscriptions = @type.subscriptions(newProps)
+                for path in pathsToUpdate
+                    @__subscriptions[path].unsubscribe()
+                    @__subscriptions[path] = newSubscriptions[path]
+                    @__subscriptions[path].subscribe setSubscriptionPropsCallback(owner, path)
+            , 50
 
     getDefaultProps: ->
         props = {}
