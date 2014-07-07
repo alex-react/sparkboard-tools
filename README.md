@@ -10,8 +10,6 @@ Tools for building web applications using Firebase and React, with isomorphic ro
 
 **firebaseSubscription** - create a subscription object out of a Firebase manifest
 
-**Router** - Isomorphic router - a React mixin on the client, a standalone function on the server.
-
 **utils**
 
 - **safeStringify** - eliminates script tags from code
