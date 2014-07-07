@@ -12,9 +12,6 @@ Tools for building web applications using Firebase and React, with isomorphic ro
 
 **Router** - Isomorphic router - a React mixin on the client, a standalone function on the server.
 
-**mergeFirebaseRules** - write Firebase rules in multiple files (use JSON, JavaScript, or CoffeeScript) and compile them using this tool.
-
-
 **utils**
 
 - **safeStringify** - eliminates script tags from code
