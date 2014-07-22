@@ -78,8 +78,8 @@ module.exports =
                     @__subscriptions[path].subscribe setSubscriptionPropsCallback(owner, path)
             , 50
 
-    getDefaultProps: ->
-        props = {}
-        for path, subscription of this.type.subscriptions?(this.props)
-            props[path] = props[path] || subscription.default 
-        props
+    # getDefaultProps: ->
+    #     props = {}
+    #     for path, subscription of this.type.subscriptions?(this.props)
+    #         props[path] = props[path] || subscription.default 
+    #     props

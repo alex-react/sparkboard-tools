@@ -27,6 +27,8 @@ _ = require("underscore")
 
 ###
 
+
+# TODO: these subscriptions do not update when new children are added
 module.exports = (manifest) ->
     _.extend manifest, 
     handlers: {}
@@ -34,7 +36,7 @@ module.exports = (manifest) ->
     modelIndex: []
     modelIndexRemoved: []
     parseObject: manifest.parseObject || (snapshot) ->
-        obj = snapshot.val()
+        obj = snapshot.val() || {}
         obj.priority = snapshot.getPriority()
         obj.id = snapshot.name()
         obj
@@ -64,7 +66,7 @@ module.exports = (manifest) ->
                 ref: childRef
 
         removeChild = (id) =>
-            @handlers[id]?.ref.off?()
+            @handlers[id]?.ref.off("value", @handlers[id].fn)
             delete @handlers[id]
             delete @models[id]
         manifest.indexRef.on "value", (snapshot) =>
@@ -87,7 +89,7 @@ module.exports = (manifest) ->
     unsubscribe: ->
         manifest.indexRef.off()
         for key, object of @handlers
-            object.ref.off()
+            object.ref.off "value", object.fn
             delete @handlers[key]
             delete @models[key]
         @modelIndex = []
